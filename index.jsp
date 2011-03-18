@@ -130,7 +130,7 @@ int number_of_attrs=0, total_size=0;
     Created: <b><%= new java.util.Date(session.getCreationTime())%></b><br/>
     Last accessed: <b><%= new java.util.Date(session.getLastAccessedTime())%></b><br/>
     Served From:   <b><%= request.getServerName() %>:<%= request.getServerPort() %></b><br/>
-    Executed From Server: <b><%= java.net.InetAddress.getLocalHost().getHostName() %> (<%= java.net.InetAddress.getLocalHost().getHostAddress() %>)</b><br/>
+    Executed On Server: <b><%= java.net.InetAddress.getLocalHost().getHostName() %> (<%= java.net.InetAddress.getLocalHost().getHostAddress() %>)</b><br/>
     Cluster view: <b><%= getClusterView() %></b><br/>
     Attributes: <b><%= number_of_attrs%></b><br/>
 </font>
