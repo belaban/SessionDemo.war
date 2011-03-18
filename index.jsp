@@ -1,10 +1,68 @@
-<%@ page import="java.util.Enumeration"%>
 <%@ page import="java.net.InetAddress" %>
+<%@ page import="java.util.*" %>
+<%@ page import="javax.management.*" %>
 
 <%!
     String hostname="n/a", user_name="n/a";
     String nodeName = System.getProperty("jboss.jvmRoute");
     boolean doInvalidation=false;
+%>
+
+<%!
+
+    protected static MBeanServer getMBeanServer() {
+        ArrayList servers = MBeanServerFactory.findMBeanServer(null);
+        if (servers != null && !servers.isEmpty()) {
+            // return 'jboss' server if available
+            for (int i = 0; i < servers.size(); i++) {
+                MBeanServer srv = (MBeanServer) servers.get(i);
+                if ("jboss".equalsIgnoreCase(srv.getDefaultDomain()))
+                    return srv;
+            }
+
+            // return first available server
+            return (MBeanServer) servers.get(0);
+        }
+        else {
+            //if it all fails, create a default
+            return MBeanServerFactory.createMBeanServer();
+        }
+    }
+
+
+
+    static String getClusterView() {
+        MBeanServer mbean_server=getMBeanServer();
+        ObjectName query=null;
+        String retval="n/a";
+        Set<String> addrs=new HashSet<String>();
+        try {
+            query=new ObjectName("jboss:partition=*,service=HAPartition");
+            Set<ObjectName> names=mbean_server.queryNames(query, null);
+            for(ObjectName name: names) {
+                List<String> view=(List<String>)mbean_server.getAttribute(name, "CurrentView");
+                if(view != null)
+                    addrs.addAll(view);
+            }
+            if(!addrs.isEmpty()) {
+                StringBuilder sb=new StringBuilder();
+                boolean first=true;
+                for(String addr: addrs) {
+                    if(first)
+                        first=false;
+                    else
+                        sb.append(", ");
+                    sb.append(addr);
+                }
+                retval=sb.toString();
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace(System.err);
+            retval=e.toString();
+        }
+        return retval;
+    }
 %>
 
 <%
@@ -62,9 +120,8 @@ int number_of_attrs=0, total_size=0;
 <%
     number_of_attrs=total_size=0;
     for(Enumeration en=session.getAttributeNames(); en.hasMoreElements();) {
-        String attr_name=(String)en.nextElement();
         number_of_attrs++;
-        String value=(String)session.getAttribute(attr_name);
+        en.nextElement();
     }
 %>
 
@@ -74,7 +131,7 @@ int number_of_attrs=0, total_size=0;
     Last accessed: <b><%= new java.util.Date(session.getLastAccessedTime())%></b><br/>
     Served From:   <b><%= request.getServerName() %>:<%= request.getServerPort() %></b><br/>
     Executed From Server: <b><%= java.net.InetAddress.getLocalHost().getHostName() %> (<%= java.net.InetAddress.getLocalHost().getHostAddress() %>)</b><br/>
-    Session will go inactive in  <b><%= session.getMaxInactiveInterval() %> seconds</b><br/>
+    Cluster view: <b><%= getClusterView() %></b><br/>
     Attributes: <b><%= number_of_attrs%></b><br/>
 </font>
 
