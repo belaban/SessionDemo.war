@@ -63,6 +63,35 @@
         }
         return retval;
     }
+
+
+    static String getClusterView2() {
+        MBeanServer mbean_server=getMBeanServer();
+        ObjectName query=null;
+        try {
+            query=new ObjectName("jboss.jgroups:type=channel,cluster=*RelayWeb*");
+            Set<ObjectName> names=mbean_server.queryNames(query, null);
+            if(names.isEmpty())
+                return null;
+            StringBuilder sb=new StringBuilder();
+            boolean first=true;
+            for(ObjectName mbean_name: names) {
+                String view=(String)mbean_server.getAttribute(mbean_name, "View");
+                if(first)
+                    first=false;
+                else
+                    sb.append(", ");
+                if(view != null)
+                    sb.append(view);
+            }
+            return sb.toString();
+        }
+        catch (Exception e) {
+            e.printStackTrace(System.err);
+            return e.toString();
+        }
+    }
+
 %>
 
 <%
@@ -123,6 +152,10 @@ int number_of_attrs=0, total_size=0;
         number_of_attrs++;
         en.nextElement();
     }
+
+    String cluster_view=getClusterView2();
+    if(cluster_view == null)
+        cluster_view=getClusterView(); // get it from HAPartition
 %>
 
 <font size=5> Session information (user=<%=user_name%>, host=<%=hostname%>):<br/><br/>
@@ -131,7 +164,7 @@ int number_of_attrs=0, total_size=0;
     Last accessed: <b><%= new java.util.Date(session.getLastAccessedTime())%></b><br/>
     Served From:   <b><%= request.getServerName() %>:<%= request.getServerPort() %></b><br/>
     Executed On Server: <b><%= java.net.InetAddress.getLocalHost().getHostName() %> (<%= java.net.InetAddress.getLocalHost().getHostAddress() %>)</b><br/>
-    Cluster view: <b><%= getClusterView() %></b><br/>
+    Cluster view: <b><%= cluster_view %></b><br/>
     Attributes: <b><%= number_of_attrs%></b><br/>
 </font>
 
