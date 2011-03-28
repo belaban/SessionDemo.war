@@ -29,6 +29,10 @@
         }
     }
 
+    protected String getContext() {
+        return getServletConfig().getServletContext().getContextPath();
+    }
+
 
 
     static String getClusterView() {
@@ -65,13 +69,15 @@
     }
 
 
-    static String getClusterView2() {
-        return _getClusterView2("jboss.jgroups:type=channel,cluster=*RelayWeb*");
+    String getClusterView2() {
+        // return _getClusterView2("jboss.jgroups:type=channel,cluster=*RelayWeb*");
+        return _getClusterView2("jboss.jgroups:type=channel,cluster=*" + getContext() + "*");
     }
 
-    static String getClusterView3() {
-        return _getClusterView2("jboss.jgroups:type=channel,cluster=*TunnelWeb*");
-    }
+   /* String getClusterView3() {
+        // return _getClusterView2("jboss.jgroups:type=channel,cluster=*TunnelWeb*");
+        return _getClusterView2("jboss.jgroups:type=channel,cluster=*" + getContext() + "*");
+    }*/
 
     protected static String _getClusterView2(String name) {
         MBeanServer mbean_server=getMBeanServer();
@@ -161,9 +167,7 @@ int number_of_attrs=0, total_size=0;
         en.nextElement();
     }
 
-    String cluster_view=getClusterView3();
-    if(cluster_view == null)
-        cluster_view=getClusterView2();
+    String cluster_view=getClusterView2();
     if(cluster_view == null)
         cluster_view=getClusterView(); // get it from HAPartition
 %>
@@ -175,6 +179,7 @@ int number_of_attrs=0, total_size=0;
     Served From:   <b><%= request.getServerName() %>:<%= request.getServerPort() %></b><br/>
     Executed On Server: <b><%= java.net.InetAddress.getLocalHost().getHostName() %> (<%= java.net.InetAddress.getLocalHost().getHostAddress() %>)</b><br/>
     Cluster view: <b><%= cluster_view %></b><br/>
+    Servlet context: <b><%= getContext()%></b><br/>
     Attributes: <b><%= number_of_attrs%></b><br/>
 </font>
 
