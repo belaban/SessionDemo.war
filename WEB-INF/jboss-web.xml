@@ -3,7 +3,7 @@
 
   <replication-config>
   
-        <cache-name>web/dist</cache-name>
+        <cache-name>web</cache-name>
      
   </replication-config>
 

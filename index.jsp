@@ -66,10 +66,18 @@
 
 
     static String getClusterView2() {
+        return _getClusterView2("jboss.jgroups:type=channel,cluster=*RelayWeb*");
+    }
+
+    static String getClusterView3() {
+        return _getClusterView2("jboss.jgroups:type=channel,cluster=*TunnelWeb*");
+    }
+
+    protected static String _getClusterView2(String name) {
         MBeanServer mbean_server=getMBeanServer();
         ObjectName query=null;
         try {
-            query=new ObjectName("jboss.jgroups:type=channel,cluster=*RelayWeb*");
+            query=new ObjectName(name);
             Set<ObjectName> names=mbean_server.queryNames(query, null);
             if(names.isEmpty())
                 return null;
@@ -153,7 +161,9 @@ int number_of_attrs=0, total_size=0;
         en.nextElement();
     }
 
-    String cluster_view=getClusterView2();
+    String cluster_view=getClusterView3();
+    if(cluster_view == null)
+        cluster_view=getClusterView2();
     if(cluster_view == null)
         cluster_view=getClusterView(); // get it from HAPartition
 %>
