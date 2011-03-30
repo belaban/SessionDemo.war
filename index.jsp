@@ -106,6 +106,37 @@
         }
     }
 
+    protected String getAddress() {
+        return _getAddress("jboss.jgroups:type=channel,cluster=*" + getContext() + "*");
+    }
+
+    protected static String _getAddress(String name) {
+        MBeanServer mbean_server=getMBeanServer();
+        ObjectName query=null;
+        try {
+            query=new ObjectName(name);
+            Set<ObjectName> names=mbean_server.queryNames(query, null);
+            if(names.isEmpty())
+                return null;
+            StringBuilder sb=new StringBuilder();
+            boolean first=true;
+            for(ObjectName mbean_name: names) {
+                String local_addr=(String)mbean_server.getAttribute(mbean_name, "Address");
+                if(first)
+                    first=false;
+                else
+                    sb.append(", ");
+                if(local_addr != null)
+                    sb.append(local_addr);
+            }
+            return sb.toString();
+        }
+        catch (Exception e) {
+            e.printStackTrace(System.err);
+            return e.toString();
+        }
+    }
+
 %>
 
 <%
@@ -179,6 +210,7 @@ int number_of_attrs=0, total_size=0;
     Served From:   <b><%= request.getServerName() %>:<%= request.getServerPort() %></b><br/>
     Executed On Server: <b><%= java.net.InetAddress.getLocalHost().getHostName() %> (<%= java.net.InetAddress.getLocalHost().getHostAddress() %>)</b><br/>
     Cluster view: <b><%= cluster_view %></b><br/>
+    Local address: <b><%=getAddress()%></b><br/>
     Servlet context: <b><%= getContext()%></b><br/>
     Attributes: <b><%= number_of_attrs%></b><br/>
 </font>
