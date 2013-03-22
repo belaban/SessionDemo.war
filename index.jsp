@@ -154,7 +154,7 @@
         doInvalidation=true;
     }
     else if(key != null) {
-        if(val == null || val.trim().length() == 0) {
+        if(val == null || val.trim().isEmpty()) {
             session.removeAttribute(key);
         }
         else {
@@ -221,10 +221,10 @@ int number_of_attrs=0, total_size=0;
     ServletContext ctx=session.getServletContext();
     Integer hits=(Integer)ctx.getAttribute("hits");
     if(hits == null) {
-        hits=new Integer(0);
+        hits=0;
         ctx.setAttribute("hits", hits);
     }
-    ctx.setAttribute("hits", new Integer(hits.intValue() +1));
+    ctx.setAttribute("hits",hits + 1);
 %>
 
 <%=hits%> hits
